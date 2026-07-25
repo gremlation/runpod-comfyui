@@ -210,9 +210,9 @@ EXPOSE 8188 22 8080
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Set Python 3.12 as default and provide `python` command used by ComfyUI/start.sh
+# Set Python 3.12 as default and bake a venv on container disk for ComfyUI
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
     update-alternatives --set python3 /usr/bin/python3.12 && \
-    ln -sf /usr/bin/python3.12 /usr/bin/python
+    python3.12 -m venv --system-site-packages /opt/ComfyUI/.venv
 
 ENTRYPOINT ["/start.sh"]
