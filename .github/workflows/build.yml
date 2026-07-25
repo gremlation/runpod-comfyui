@@ -32,6 +32,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push (CUDA 12.8 + CUDA 13.0)
+      - name: Build and push CUDA 12.8
         run: |
-          docker buildx bake --push --file docker-bake.hcl regular cuda13
+          docker buildx bake --push --file docker-bake.hcl regular
+
+      - name: Build and push CUDA 13.0
+        run: |
+          docker buildx bake --push --file docker-bake.hcl cuda13
