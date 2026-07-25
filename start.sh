@@ -172,7 +172,7 @@ source "$VENV_DIR/bin/activate"
 python -m pip --version > /dev/null 2>&1
 
 # Start ComfyUI — keep container alive if it crashes so SSH/FileBrowser remain accessible
-FIXED_ARGS="--listen 0.0.0.0 --port 8188 --enable-cors-header --user-directory ${NET_COMFY_DIR}/user --models-directory ${FAST_CACHE_DIR} --output-directory ${NET_COMFY_DIR}/output --temp-directory ${FAST_TEMP_DIR} --input-directory ${NET_COMFY_DIR}/input --extra-model-paths-config ${COMFYUI_DIR}/extra_model_paths.yaml"
+FIXED_ARGS="--listen 0.0.0.0 --port 8188 --enable-cors-header --user-directory ${NET_COMFY_DIR}/user --models-directory ${FAST_CACHE_DIR} --output-directory ${NET_COMFY_DIR}/output --temp-directory ${FAST_TEMP_DIR} --input-directory ${NET_COMFY_DIR}/input --database-url sqlite:///${NET_COMFY_DIR}/user/comfyui.db --extra-model-paths-config ${COMFYUI_DIR}/extra_model_paths.yaml"
 if [ -s "$ARGS_FILE" ]; then
     CUSTOM_ARGS=$(grep -v '^#' "$ARGS_FILE" | tr '\n' ' ')
     if [ ! -z "$CUSTOM_ARGS" ]; then
