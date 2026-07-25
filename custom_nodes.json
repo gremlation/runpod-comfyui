@@ -44,6 +44,12 @@
       "publisher": "akurate"
     },
     {
+      "name": "ComfyUI-Krea2TextEncoder",
+      "registry_id": "comfyui-krea2-text-encoder",
+      "git": "https://github.com/ethanfel/ComfyUI-Krea2TextEncoder.git",
+      "publisher": "ethanfel"
+    },
+    {
       "name": "comfyui-krea2-conditioning",
       "registry_id": "comfyui-krea2-conditioning",
       "git": "https://github.com/huwhitememes/comfyui-krea2-conditioning.git",
