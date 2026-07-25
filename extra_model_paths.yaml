@@ -10,12 +10,10 @@ runpod-network:
   configs: models/configs
   loras: models/loras
   vae: models/vae
-  text_encoders: |
-    models/text_encoders/
-    models/clip/
-  diffusion_models: |
-    models/unet/
-    models/diffusion_models/
+  text_encoders: models/text_encoders
+  clip: models/clip
+  diffusion_models: models/diffusion_models
+  unet: models/unet
   clip_vision: models/clip_vision
   style_models: models/style_models
   embeddings: models/embeddings
