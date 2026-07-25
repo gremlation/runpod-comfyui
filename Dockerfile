@@ -71,15 +71,6 @@ COPY custom_nodes.json /opt/ComfyUI/custom_nodes.json
 COPY scripts/install_nodes.py /opt/ComfyUI/install_nodes.py
 RUN python /opt/ComfyUI/install_nodes.py /opt/ComfyUI/custom_nodes.json /opt/ComfyUI
 
-# ComfyUI v0.28.3's --enable-manager requires the comfyui_manager package to be importable.
-# The registry install only places the node directory; installing it as a pip package makes
-# the import work and creates the /opt/ComfyUI/manager_requirements.txt ComfyUI looks for.
-RUN if [ -d /opt/ComfyUI/custom_nodes/comfyui-manager ]; then \
-        python -m pip install --no-deps /opt/ComfyUI/custom_nodes/comfyui-manager; \
-    elif [ -d /opt/ComfyUI/custom_nodes/ComfyUI-Manager ]; then \
-        python -m pip install --no-deps /opt/ComfyUI/custom_nodes/ComfyUI-Manager; \
-    fi
-
 # Generate lock file from all requirements (including torch pins and node deps), then install with hash verification.
 # Some custom nodes declare git+ dependencies (e.g. was-ns -> cstr) that pip-tools
 # cannot hash. Install those separately and exclude them from the lockfile.
@@ -92,6 +83,7 @@ RUN cat /opt/ComfyUI/requirements.txt > /opt/ComfyUI/requirements.in && printf '
     echo "GitPython" >> /opt/ComfyUI/requirements.in && \
     echo "opencv-python" >> /opt/ComfyUI/requirements.in && \
     echo "pillow>=12.1.1" >> /opt/ComfyUI/requirements.in && \
+    echo "comfyui-manager" >> /opt/ComfyUI/requirements.in && \
     sed -i -E '/^[[:space:]]*(torch|torchvision|torchaudio)([[:space:]]|[\[<>=!~;#]|$)/d' /opt/ComfyUI/requirements.in && \
     echo "torch==${TORCH_VERSION}" >> /opt/ComfyUI/requirements.in && \
     echo "torchvision==${TORCHVISION_VERSION}" >> /opt/ComfyUI/requirements.in && \

@@ -2,12 +2,6 @@
   "comfyui_version": "v0.28.3",
   "nodes": [
     {
-      "name": "ComfyUI-Manager",
-      "registry_id": "comfyui-manager",
-      "git": "https://github.com/ltdrdata/ComfyUI-Manager.git",
-      "publisher": "drltdata"
-    },
-    {
       "name": "ComfyUI-KJNodes",
       "registry_id": "comfyui-kjnodes",
       "git": "https://github.com/kijai/ComfyUI-KJNodes.git",

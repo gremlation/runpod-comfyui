@@ -36,6 +36,8 @@ jobs:
         run: |
           docker buildx bake --push --file docker-bake.hcl regular
 
-      - name: Build and push CUDA 13.0
-        run: |
-          docker buildx bake --push --file docker-bake.hcl cuda13
+      # CUDA 13.0 disabled until CUDA 12.8 is fully stable; building both doubles the
+      # feedback loop for finding build/runtime issues on the A100 test pod.
+      # - name: Build and push CUDA 13.0
+      #   run: |
+      #     docker buildx bake --push --file docker-bake.hcl cuda13
