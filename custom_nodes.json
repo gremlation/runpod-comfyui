@@ -68,12 +68,6 @@
       "publisher": "angelbottomless"
     },
     {
-      "name": "comfyui-logicutils",
-      "registry_id": "comfyui-logicutils",
-      "git": "https://github.com/aria1th/ComfyUI-LogicUtils.git",
-      "publisher": "angelbottomless"
-    },
-    {
       "name": "rgthree-comfy",
       "registry_id": "rgthree-comfy",
       "git": "https://github.com/rgthree/rgthree-comfy.git",
