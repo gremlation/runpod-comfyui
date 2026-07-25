@@ -69,7 +69,9 @@ COPY custom_nodes.json /tmp/build/custom_nodes.json
 COPY scripts/install_nodes.py /tmp/build/install_nodes.py
 RUN python3.12 /tmp/build/install_nodes.py /tmp/build/custom_nodes.json /tmp/build/ComfyUI
 
-# Generate lock file from all requirements (including torch pins and node deps), then install with hash verification
+# Generate lock file from all requirements (including torch pins and node deps), then install with hash verification.
+# Some custom nodes declare git+ dependencies (e.g. was-ns -> cstr) that pip-tools
+# cannot hash. Install those separately and exclude them from the lockfile.
 RUN cat /tmp/build/ComfyUI/requirements.txt > /tmp/build/requirements.in && printf '\n' >> /tmp/build/requirements.in && \
     for node_dir in /tmp/build/ComfyUI/custom_nodes/*/; do \
         if [ -f "$node_dir/requirements.txt" ]; then \
@@ -83,6 +85,12 @@ RUN cat /tmp/build/ComfyUI/requirements.txt > /tmp/build/requirements.in && prin
     echo "torch==${TORCH_VERSION}" >> /tmp/build/requirements.in && \
     echo "torchvision==${TORCHVISION_VERSION}" >> /tmp/build/requirements.in && \
     echo "torchaudio==${TORCHAUDIO_VERSION}" >> /tmp/build/requirements.in && \
+    grep -E '^git\+https?://' /tmp/build/requirements.in > /tmp/build/git-requirements.txt || true && \
+    sed -i -E '/^[[:space:]]*git\+https?:\/\//d' /tmp/build/requirements.in && \
+    if [ -s /tmp/build/git-requirements.txt ]; then \
+        echo "Installing git dependencies:" && cat /tmp/build/git-requirements.txt && \
+        python3.12 -m pip install --no-cache-dir -r /tmp/build/git-requirements.txt; \
+    fi && \
     TORCH_INDEX_URL="https://download.pytorch.org/whl/${TORCH_INDEX_SUFFIX}" && \
     PIP_INDEX_URL=https://pypi.org/simple \
     PIP_EXTRA_INDEX_URL="${TORCH_INDEX_URL}" \
