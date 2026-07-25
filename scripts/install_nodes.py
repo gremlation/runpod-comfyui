@@ -85,10 +85,10 @@ def install_requirements(comfyui_dir, node_name):
         check=False,
     )
     if rc != 0:
-        print(f"[deps] {node_name}: requirements install failed, continuing")
+        print(f"[deps] {node_name}: requirements install failed")
         print(f"stderr: {err}")
-    else:
-        print(f"[deps] {node_name}: OK")
+        sys.exit(1)
+    print(f"[deps] {node_name}: OK")
 
 
 def main(config_path, comfyui_dir):
