@@ -70,10 +70,10 @@ COPY scripts/install_nodes.py /tmp/build/install_nodes.py
 RUN python3.12 /tmp/build/install_nodes.py /tmp/build/custom_nodes.json /tmp/build/ComfyUI
 
 # Generate lock file from all requirements (including torch pins and node deps), then install with hash verification
-RUN cat /tmp/build/ComfyUI/requirements.txt > /tmp/build/requirements.in && \
+RUN cat /tmp/build/ComfyUI/requirements.txt > /tmp/build/requirements.in && printf '\n' >> /tmp/build/requirements.in && \
     for node_dir in /tmp/build/ComfyUI/custom_nodes/*/; do \
         if [ -f "$node_dir/requirements.txt" ]; then \
-            cat "$node_dir/requirements.txt" >> /tmp/build/requirements.in; \
+            cat "$node_dir/requirements.txt" >> /tmp/build/requirements.in && printf '\n' >> /tmp/build/requirements.in; \
         fi; \
     done && \
     echo "GitPython" >> /tmp/build/requirements.in && \
