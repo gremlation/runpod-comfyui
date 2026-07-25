@@ -153,6 +153,17 @@ fi
 
 copy_fast_models
 
+# Ensure network-volume fallback model directories exist so ComfyUI/Manager don't warn
+mkdir -p "${NET_COMFY_DIR}/models"
+for subdir in \
+    checkpoints configs loras vae text_encoders clip diffusion_models unet \
+    clip_vision style_models embeddings diffusers vae_approx controlnet \
+    t2i_adapter gligen upscale_models latent_upscale_models hypernetworks \
+    photomaker classifiers model_patches audio_encoders background_removal \
+    frame_interpolation geometry_estimation optical_flow detection; do
+    mkdir -p "${NET_COMFY_DIR}/models/${subdir}"
+done
+
 # Activate the baked venv on container disk
 VENV_DIR="/opt/ComfyUI/.venv"
 source "$VENV_DIR/bin/activate"
