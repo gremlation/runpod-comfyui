@@ -1,0 +1,83 @@
+{
+  "comfyui_version": "v0.28.3",
+  "nodes": [
+    {
+      "name": "ComfyUI-Manager",
+      "registry_id": "comfyui-manager",
+      "git": "https://github.com/ltdrdata/ComfyUI-Manager.git",
+      "publisher": "drltdata"
+    },
+    {
+      "name": "ComfyUI-KJNodes",
+      "registry_id": "comfyui-kjnodes",
+      "git": "https://github.com/kijai/ComfyUI-KJNodes.git",
+      "publisher": "kijai"
+    },
+    {
+      "name": "ComfyUI-GGUF",
+      "registry_id": "ComfyUI-GGUF",
+      "git": "https://github.com/city96/ComfyUI-GGUF.git",
+      "publisher": "city96"
+    },
+    {
+      "name": "Civicomfy",
+      "registry_id": "civicomfy",
+      "git": "https://github.com/MoonGoblinDev/Civicomfy.git",
+      "publisher": "moongoblin"
+    },
+    {
+      "name": "ComfyUI-RunpodDirect",
+      "registry_id": "comfyui-runpoddirect",
+      "git": "https://github.com/MadiatorLabs/ComfyUI-RunpodDirect.git",
+      "publisher": "madiator2011"
+    },
+    {
+      "name": "comfyui-agent-panel",
+      "registry_id": "comfyui-agent-panel",
+      "git": "https://github.com/artokun/comfyui-mcp-panel.git",
+      "publisher": "artokun"
+    },
+    {
+      "name": "comfyui-darkroom",
+      "registry_id": "comfyui-darkroom",
+      "git": "https://github.com/jeremieLouvaert/ComfyUI-Darkroom.git",
+      "publisher": "akurate"
+    },
+    {
+      "name": "comfyui-krea2-conditioning",
+      "registry_id": "comfyui-krea2-conditioning",
+      "git": "https://github.com/huwhitememes/comfyui-krea2-conditioning.git",
+      "publisher": "huwhitememes"
+    },
+    {
+      "name": "comfyui-krea2edit",
+      "registry_id": "comfyui-krea2edit",
+      "git": "https://github.com/lbouaraba/comfyui-krea2edit.git",
+      "publisher": "conradlocke"
+    },
+    {
+      "name": "comfyui-logicutils",
+      "registry_id": "comfyui-logicutils",
+      "git": "https://github.com/aria1th/ComfyUI-LogicUtils.git",
+      "publisher": "angelbottomless"
+    },
+    {
+      "name": "comfyui_controlnet_aux",
+      "registry_id": "comfyui_controlnet_aux",
+      "git": "https://github.com/Fannovel16/comfyui_controlnet_aux.git",
+      "publisher": "fannovel16"
+    },
+    {
+      "name": "rgthree-comfy",
+      "registry_id": "rgthree-comfy",
+      "git": "https://github.com/rgthree/rgthree-comfy.git",
+      "publisher": "rgthree"
+    },
+    {
+      "name": "was-ns",
+      "registry_id": "was-ns",
+      "git": "https://github.com/ltdrdata/was-node-suite-comfyui.git",
+      "publisher": "drltdata"
+    }
+  ]
+}

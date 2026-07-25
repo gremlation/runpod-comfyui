@@ -1,0 +1,8 @@
+# Relative paths under /workspace/runpod-slim/ComfyUI/models/.
+# Files listed here are copied to the fast local cache at /var/cache/comfyui/models
+# at container startup. Models not listed are still available via the fallback
+# network volume path configured in extra_model_paths.yaml.
+
+diffusion_models/krea2_turbo_fp8_scaled.safetensors
+text_encoders/qwen3vl_4b_bf16.safetensors
+vae/qwen_image_vae.safetensors
