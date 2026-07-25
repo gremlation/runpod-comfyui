@@ -35,86 +35,86 @@ RUN apt-get update && \
     && rm cuda-keyring_1.1-1_all.deb \
     && rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED
 
-# Install pip and pip-tools for lockfile generation
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-    python3.12 get-pip.py && \
-    python3.12 -m pip install --no-cache-dir pip-tools && \
-    rm get-pip.py
-
 # Set CUDA environment for building
 ENV PATH=/usr/local/cuda/bin:${PATH}
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64
 
-# Download pinned ComfyUI source
-WORKDIR /tmp/build
-RUN curl -fSL "https://github.com/comfyanonymous/ComfyUI/archive/refs/tags/${COMFYUI_VERSION}.tar.gz" -o comfyui.tar.gz && \
-    mkdir -p ComfyUI && tar xzf comfyui.tar.gz --strip-components=1 -C ComfyUI && rm comfyui.tar.gz
+# Create the ComfyUI directory and a venv that will be baked into the image.
+RUN mkdir -p /opt/ComfyUI && \
+    python3.12 -m venv --system-site-packages /opt/ComfyUI/.venv
 
-# Install pinned torch stack and comfy-cli so custom node installs can compile
-WORKDIR /tmp/build
+# Use the venv for all Python commands from here on.
+ENV PATH=/opt/ComfyUI/.venv/bin:${PATH}
+
+# Install pip-tools into the venv for lockfile generation
+RUN python -m pip install --no-cache-dir --upgrade pip pip-tools
+
+# Download pinned ComfyUI source
+WORKDIR /opt/ComfyUI
+RUN curl -fSL "https://github.com/comfyanonymous/ComfyUI/archive/refs/tags/${COMFYUI_VERSION}.tar.gz" -o comfyui.tar.gz && \
+    tar xzf comfyui.tar.gz --strip-components=1 && rm comfyui.tar.gz
+
+# Install pinned torch stack, ComfyUI core requirements, and comfy-cli into the venv
 RUN TORCH_INDEX_URL="https://download.pytorch.org/whl/${TORCH_INDEX_SUFFIX}" && \
-    python3.12 -m pip install --no-cache-dir --upgrade pip && \
-    python3.12 -m pip install --no-cache-dir \
+    python -m pip install --no-cache-dir \
     --index-url https://pypi.org/simple \
     --extra-index-url "${TORCH_INDEX_URL}" \
     "torch==${TORCH_VERSION}" \
     "torchvision==${TORCHVISION_VERSION}" \
     "torchaudio==${TORCHAUDIO_VERSION}" \
-    -r ComfyUI/requirements.txt \
+    -r requirements.txt \
     comfy-cli && \
-    python3.12 -c 'import torch; print(torch.__version__)'
+    python -c 'import torch; print(torch.__version__)'
 
 # Install baked custom nodes from the registry-first / git-fallback list
-COPY custom_nodes.json /tmp/build/custom_nodes.json
-COPY scripts/install_nodes.py /tmp/build/install_nodes.py
-RUN python3.12 /tmp/build/install_nodes.py /tmp/build/custom_nodes.json /tmp/build/ComfyUI
+COPY custom_nodes.json /opt/ComfyUI/custom_nodes.json
+COPY scripts/install_nodes.py /opt/ComfyUI/install_nodes.py
+RUN python /opt/ComfyUI/install_nodes.py /opt/ComfyUI/custom_nodes.json /opt/ComfyUI
 
 # Generate lock file from all requirements (including torch pins and node deps), then install with hash verification.
 # Some custom nodes declare git+ dependencies (e.g. was-ns -> cstr) that pip-tools
 # cannot hash. Install those separately and exclude them from the lockfile.
-RUN cat /tmp/build/ComfyUI/requirements.txt > /tmp/build/requirements.in && printf '\n' >> /tmp/build/requirements.in && \
-    for node_dir in /tmp/build/ComfyUI/custom_nodes/*/; do \
+RUN cat /opt/ComfyUI/requirements.txt > /opt/ComfyUI/requirements.in && printf '\n' >> /opt/ComfyUI/requirements.in && \
+    for node_dir in /opt/ComfyUI/custom_nodes/*/; do \
         if [ -f "$node_dir/requirements.txt" ]; then \
-            cat "$node_dir/requirements.txt" >> /tmp/build/requirements.in && printf '\n' >> /tmp/build/requirements.in; \
+            cat "$node_dir/requirements.txt" >> /opt/ComfyUI/requirements.in && printf '\n' >> /opt/ComfyUI/requirements.in; \
         fi; \
     done && \
-    echo "GitPython" >> /tmp/build/requirements.in && \
-    echo "opencv-python" >> /tmp/build/requirements.in && \
-    echo "pillow>=12.1.1" >> /tmp/build/requirements.in && \
-    sed -i -E '/^[[:space:]]*(torch|torchvision|torchaudio)([[:space:]]|[\[<>=!~;#]|$)/d' /tmp/build/requirements.in && \
-    echo "torch==${TORCH_VERSION}" >> /tmp/build/requirements.in && \
-    echo "torchvision==${TORCHVISION_VERSION}" >> /tmp/build/requirements.in && \
-    echo "torchaudio==${TORCHAUDIO_VERSION}" >> /tmp/build/requirements.in && \
-    grep -E '^git\+https?://' /tmp/build/requirements.in > /tmp/build/git-requirements.txt || true && \
-    sed -i -E '/^[[:space:]]*git\+https?:\/\//d' /tmp/build/requirements.in && \
-    if [ -s /tmp/build/git-requirements.txt ]; then \
-        echo "Installing git dependencies:" && cat /tmp/build/git-requirements.txt && \
-        python3.12 -m pip install --no-cache-dir -r /tmp/build/git-requirements.txt; \
+    echo "GitPython" >> /opt/ComfyUI/requirements.in && \
+    echo "opencv-python" >> /opt/ComfyUI/requirements.in && \
+    echo "pillow>=12.1.1" >> /opt/ComfyUI/requirements.in && \
+    sed -i -E '/^[[:space:]]*(torch|torchvision|torchaudio)([[:space:]]|[\[<>=!~;#]|$)/d' /opt/ComfyUI/requirements.in && \
+    echo "torch==${TORCH_VERSION}" >> /opt/ComfyUI/requirements.in && \
+    echo "torchvision==${TORCHVISION_VERSION}" >> /opt/ComfyUI/requirements.in && \
+    echo "torchaudio==${TORCHAUDIO_VERSION}" >> /opt/ComfyUI/requirements.in && \
+    grep -E '^git\+https?://' /opt/ComfyUI/requirements.in > /opt/ComfyUI/git-requirements.txt || true && \
+    sed -i -E '/^[[:space:]]*git\+https?:\/\//d' /opt/ComfyUI/requirements.in && \
+    if [ -s /opt/ComfyUI/git-requirements.txt ]; then \
+        echo "Installing git dependencies:" && cat /opt/ComfyUI/git-requirements.txt && \
+        python -m pip install --no-cache-dir -r /opt/ComfyUI/git-requirements.txt; \
     fi && \
     TORCH_INDEX_URL="https://download.pytorch.org/whl/${TORCH_INDEX_SUFFIX}" && \
     PIP_INDEX_URL=https://pypi.org/simple \
     PIP_EXTRA_INDEX_URL="${TORCH_INDEX_URL}" \
-    pip-compile --generate-hashes --output-file=/tmp/build/requirements.lock --strip-extras --allow-unsafe /tmp/build/requirements.in && \
-    python3.12 -m pip install --no-cache-dir --ignore-installed --require-hashes \
+    pip-compile --generate-hashes --output-file=/opt/ComfyUI/requirements.lock --strip-extras --allow-unsafe /opt/ComfyUI/requirements.in && \
+    python -m pip install --no-cache-dir --ignore-installed --require-hashes \
     --index-url https://pypi.org/simple \
     --extra-index-url "${TORCH_INDEX_URL}" \
-    -r /tmp/build/requirements.lock && \
+    -r /opt/ComfyUI/requirements.lock && \
     TORCH_VERSION="${TORCH_VERSION}" TORCHVISION_VERSION="${TORCHVISION_VERSION}" TORCHAUDIO_VERSION="${TORCHAUDIO_VERSION}" \
-    python3.12 -c 'import importlib.metadata as m, os, sys; expected = {"torch": os.environ["TORCH_VERSION"], "torchvision": os.environ["TORCHVISION_VERSION"], "torchaudio": os.environ["TORCHAUDIO_VERSION"]}; mismatches = [f"{pkg}: expected {version}, got {m.version(pkg)}" for pkg, version in expected.items() if m.version(pkg) != version]; sys.exit("\n".join(mismatches) if mismatches else 0)' && \
-    python3.12 -m pip uninstall -y comfy-cli
+    python -c 'import importlib.metadata as m, os, sys; expected = {"torch": os.environ["TORCH_VERSION"], "torchvision": os.environ["TORCHVISION_VERSION"], "torchaudio": os.environ["TORCHAUDIO_VERSION"]}; mismatches = [f"{pkg}: expected {version}, got {m.version(pkg)}" for pkg, version in expected.items() if m.version(pkg) != version]; sys.exit("\n".join(mismatches) if mismatches else 0)' && \
+    python -m pip uninstall -y comfy-cli && \
+    rm -f /opt/ComfyUI/requirements.in /opt/ComfyUI/requirements.lock /opt/ComfyUI/git-requirements.txt
 
 # Init git repos with upstream remotes so ComfyUI-Manager can detect versions
-RUN cd /tmp/build/ComfyUI && \
+RUN cd /opt/ComfyUI && \
     git init && git add -A && git -c user.name=- -c user.email=- commit -q -m "ComfyUI ${COMFYUI_VERSION}" && git tag "${COMFYUI_VERSION}" && \
     git remote add origin https://github.com/comfyanonymous/ComfyUI.git && \
-    for node_dir in /tmp/build/ComfyUI/custom_nodes/*/; do \
+    for node_dir in /opt/ComfyUI/custom_nodes/*/; do \
         [ -d "${node_dir}/.git" ] && continue; \
         cd "${node_dir}" && \
         git init && git add -A && git -c user.name=- -c user.email=- commit -q -m "baked node" || true; \
     done
-
-# Bake ComfyUI + custom nodes into the runtime location
-RUN cp -r /tmp/build/ComfyUI /opt/ComfyUI
 
 # ============================================================================
 # Stage 2: Runtime - Clean image with pre-installed packages
@@ -179,7 +179,7 @@ RUN apt-get update && \
 COPY --from=builder /usr/local/lib/python3.12 /usr/local/lib/python3.12
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy baked ComfyUI + custom nodes from builder stage
+# Copy baked ComfyUI + custom nodes + venv from builder stage
 COPY --from=builder /opt/ComfyUI /opt/ComfyUI
 
 # Copy model fallback config
@@ -218,9 +218,8 @@ EXPOSE 8188 22 8080
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Set Python 3.12 as default and bake a venv on container disk for ComfyUI
+# Set Python 3.12 as default for SSH/system use (ComfyUI runs inside the venv)
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
-    update-alternatives --set python3 /usr/bin/python3.12 && \
-    python3.12 -m venv --system-site-packages /opt/ComfyUI/.venv
+    update-alternatives --set python3 /usr/bin/python3.12
 
 ENTRYPOINT ["/start.sh"]
