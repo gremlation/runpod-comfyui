@@ -68,10 +68,10 @@
       "publisher": "angelbottomless"
     },
     {
-      "name": "comfyui_controlnet_aux",
-      "registry_id": "comfyui_controlnet_aux",
-      "git": "https://github.com/Fannovel16/comfyui_controlnet_aux.git",
-      "publisher": "fannovel16"
+      "name": "comfyui-logicutils",
+      "registry_id": "comfyui-logicutils",
+      "git": "https://github.com/aria1th/ComfyUI-LogicUtils.git",
+      "publisher": "angelbottomless"
     },
     {
       "name": "rgthree-comfy",
